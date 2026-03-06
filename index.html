@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mural de Recados</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="mural-page">
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-brand">
+        <span class="brand-icon-sm">✦</span>
+        <span class="brand-name-sm">Mural</span>
+      </div>
+      <div class="navbar-user">
+        <div class="user-info">
+          <span class="user-avatar" id="user-avatar"></span>
+          <div class="user-meta">
+            <span class="user-name" id="user-name"></span>
+            <span class="user-badge" id="user-badge"></span>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="handleLogout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="mural-hero">
+    <div class="hero-bg">
+      <div class="hero-orb orb-1"></div>
+      <div class="hero-orb orb-2"></div>
+    </div>
+    <div class="hero-content">
+      <h1>Mural de <em>Recados</em></h1>
+      <p id="hero-subtitle">Confira os recados mais recentes</p>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <main class="mural-main">
+    <div class="mural-container">
+
+      <!-- Toolbar admin -->
+      <div class="mural-toolbar" id="admin-toolbar" style="display:none">
+        <span class="toolbar-label">Você é administrador</span>
+        <button class="btn-add" id="btn-abrir-form" onclick="abrirModal('modal-recado')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo Recado
+        </button>
+      </div>
+
+      <!-- Notificações -->
+      <div id="msg-mural" class="msg hidden" style="margin-bottom:1.5rem"></div>
+
+      <!-- Lista de recados -->
+      <div id="recados-container">
+        <div class="recados-loading" id="loading-state">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+          <p>Carregando recados...</p>
+        </div>
+        <div id="recados-lista" class="recados-grid"></div>
+        <div id="empty-state" class="empty-state hidden">
+          <span class="empty-icon">📋</span>
+          <p>Nenhum recado publicado ainda.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- MODAL ADICIONAR/EDITAR RECADO -->
+  <div class="modal-overlay hidden" id="modal-recado" onclick="fecharModalOverlay(event, 'modal-recado')">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-titulo">Novo Recado</h3>
+        <button class="modal-close" onclick="fecharModal('modal-recado')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="form-recado" novalidate>
+        <input type="hidden" id="recado-id">
+        <div class="field-group">
+          <label for="recado-titulo">Título</label>
+          <input type="text" id="recado-titulo" placeholder="Título do recado">
+          <span class="field-error" id="err-recado-titulo"></span>
+        </div>
+        <div class="field-group">
+          <label for="recado-texto">Mensagem</label>
+          <textarea id="recado-texto" rows="5" placeholder="Escreva a mensagem aqui..."></textarea>
+          <span class="field-error" id="err-recado-texto"></span>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="fecharModal('modal-recado')">Cancelar</button>
+          <button type="submit" class="btn-primary" id="btn-salvar-recado">
+            <span class="btn-text">Salvar</span>
+            <span class="btn-loader hidden">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-18 0"/></svg>
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRMAÇÃO EXCLUSÃO -->
+  <div class="modal-overlay hidden" id="modal-excluir" onclick="fecharModalOverlay(event, 'modal-excluir')">
+    <div class="modal-box modal-sm">
+      <div class="modal-header">
+        <h3>Excluir recado</h3>
+        <button class="modal-close" onclick="fecharModal('modal-excluir')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <p class="modal-body-text">Tem certeza que deseja excluir este recado? Esta ação não pode ser desfeita.</p>
+      <input type="hidden" id="excluir-id">
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="fecharModal('modal-excluir')">Cancelar</button>
+        <button type="button" class="btn-danger" id="btn-confirmar-excluir" onclick="confirmarExcluir()">
+          <span class="btn-text">Excluir</span>
+          <span class="btn-loader hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 1 1-18 0"/></svg>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Verificar autenticação
+    const user = Auth.requireLogin();
+    let isAdmin = user.tipo === 'admin';
+
+    // Exibir dados do usuário
+    document.getElementById('user-name').textContent = user.nome;
+    document.getElementById('user-badge').textContent = isAdmin ? 'Administrador' : 'Usuário';
+    document.getElementById('user-badge').className = 'user-badge badge-' + user.tipo;
+    document.getElementById('user-avatar').textContent = user.nome.charAt(0).toUpperCase();
+
+    if (isAdmin) {
+      document.getElementById('admin-toolbar').style.display = 'flex';
+      document.getElementById('hero-subtitle').textContent = 'Gerencie e publique seus recados';
+    }
+
+    // Carregar recados
+    carregarRecados();
+
+    async function carregarRecados() {
+      document.getElementById('loading-state').style.display = 'flex';
+      document.getElementById('recados-lista').innerHTML = '';
+      document.getElementById('empty-state').classList.add('hidden');
+
+      const result = await API.listarRecados();
+      document.getElementById('loading-state').style.display = 'none';
+
+      if (result.success && result.recados.length > 0) {
+        renderRecados(result.recados);
+      } else {
+        document.getElementById('empty-state').classList.remove('hidden');
+      }
+    }
+
+    function renderRecados(recados) {
+      const lista = document.getElementById('recados-lista');
+      lista.innerHTML = '';
+
+      recados.forEach((r, i) => {
+        const card = document.createElement('article');
+        card.className = 'recado-card';
+        card.style.animationDelay = (i * 0.07) + 's';
+
+        const dataFormatada = formatarData(r.data_cadastro);
+        const inicialAutor = r.autor_nome ? r.autor_nome.charAt(0).toUpperCase() : '?';
+
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-meta">
+              <span class="autor-avatar">${inicialAutor}</span>
+              <div>
+                <span class="autor-nome">${escapeHtml(r.autor_nome || 'Admin')}</span>
+                <time class="card-data">${dataFormatada}</time>
+              </div>
+            </div>
+            ${isAdmin ? `
+            <div class="card-actions">
+              <button class="card-btn card-btn-edit" title="Editar" onclick="abrirEditar(${r.id}, '${escapeAttr(r.titulo)}', '${escapeAttr(r.texto)}')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="card-btn card-btn-del" title="Excluir" onclick="abrirExcluir(${r.id})">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              </button>
+            </div>` : ''}
+          </div>
+          <div class="card-body">
+            <h3 class="card-titulo">${escapeHtml(r.titulo)}</h3>
+            <p class="card-texto">${escapeHtml(r.texto)}</p>
+          </div>
+        `;
+        lista.appendChild(card);
+      });
+    }
+
+    // Formulário de recado
+    document.getElementById('form-recado').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      document.getElementById('err-recado-titulo').textContent = '';
+      document.getElementById('err-recado-texto').textContent = '';
+
+      const id = document.getElementById('recado-id').value;
+      const titulo = document.getElementById('recado-titulo').value.trim();
+      const texto = document.getElementById('recado-texto').value.trim();
+      let valid = true;
+
+      if (!titulo) { showFieldError('err-recado-titulo', 'Informe o título'); valid = false; }
+      if (!texto) { showFieldError('err-recado-texto', 'Escreva a mensagem'); valid = false; }
+      if (!valid) return;
+
+      setBtnLoading('btn-salvar-recado', true);
+      const result = id
+        ? await API.editarRecado(id, titulo, texto)
+        : await API.adicionarRecado(titulo, texto, user.id, user.nome);
+
+      setBtnLoading('btn-salvar-recado', false);
+
+      if (result.success) {
+        fecharModal('modal-recado');
+        showMsgMural('success', id ? 'Recado atualizado!' : 'Recado publicado!');
+        carregarRecados();
+      } else {
+        showMsgMural('error', result.message || 'Erro ao salvar recado');
+      }
+    });
+
+    function abrirEditar(id, titulo, texto) {
+      document.getElementById('modal-titulo').textContent = 'Editar Recado';
+      document.getElementById('recado-id').value = id;
+      document.getElementById('recado-titulo').value = titulo;
+      document.getElementById('recado-texto').value = texto;
+      abrirModal('modal-recado');
+    }
+
+    function abrirExcluir(id) {
+      document.getElementById('excluir-id').value = id;
+      abrirModal('modal-excluir');
+    }
+
+    async function confirmarExcluir() {
+      const id = document.getElementById('excluir-id').value;
+      setBtnLoading('btn-confirmar-excluir', true);
+      const result = await API.excluirRecado(id);
+      setBtnLoading('btn-confirmar-excluir', false);
+
+      if (result.success) {
+        fecharModal('modal-excluir');
+        showMsgMural('success', 'Recado excluído!');
+        carregarRecados();
+      } else {
+        showMsgMural('error', 'Erro ao excluir recado');
+      }
+    }
+
+    function handleLogout() {
+      Auth.logout();
+      window.location.href = 'login.html';
+    }
+
+    function showMsgMural(type, text) {
+      const el = document.getElementById('msg-mural');
+      el.className = 'msg msg-' + type;
+      el.textContent = text;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 3500);
+    }
+
+    // Reset modal ao abrir
+    const origAbrirModal = window.abrirModal;
+    window.abrirModal = function(id) {
+      if (id === 'modal-recado' && !document.getElementById('recado-id').value) {
+        document.getElementById('modal-titulo').textContent = 'Novo Recado';
+        document.getElementById('recado-id').value = '';
+        document.getElementById('recado-titulo').value = '';
+        document.getElementById('recado-texto').value = '';
+        document.getElementById('err-recado-titulo').textContent = '';
+        document.getElementById('err-recado-texto').textContent = '';
+      }
+      document.getElementById(id).classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+  </script>
+</body>
+</html>
