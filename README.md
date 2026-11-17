@@ -1,98 +1,66 @@
-# 📋 Mural de Recados
+<h1 align="center">Mural de Recados</h1>
 
-Sistema de mural de recados com autenticação, dois níveis de acesso (admin e usuário) e design responsivo.
+<p align="center">
+  Sistema web de recados com login e dois níveis de acesso, feito em equipe na FATEC Campinas
+</p>
 
----
-
-## 🚀 Como rodar localmente (Demo — sem servidor)
-
-Abra o arquivo `login.html` diretamente no navegador.  
-O modo demo usa `localStorage` para simular o banco de dados.
-
-**Contas de demonstração:**
-| E-mail           | Senha    | Tipo         |
-|------------------|----------|--------------|
-| admin@demo.com   | admin123 | Administrador|
-| user@demo.com    | user123  | Usuário      |
-
-> O admin pode adicionar, editar e excluir recados.  
-> O usuário comum apenas visualiza.
+<p align="center">
+  <img alt="PHP" src="https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white"/>
+  <img alt="MySQL" src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white"/>
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black"/>
+  <img alt="HTML5" src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white"/>
+  <img alt="CSS3" src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white"/>
+</p>
 
 ---
 
-## 🖥️ Como rodar com backend PHP + MySQL
+### O que faz
 
-### 1. Pré-requisitos
-- PHP 8.0+
-- MySQL 5.7+ ou MariaDB 10+
-- Servidor local: XAMPP, WAMP, Laragon, ou similar
+O administrador adiciona, edita e exclui recados. O usuário comum só visualiza. O layout se adapta ao celular.
 
-### 2. Configurar o banco de dados
-```sql
--- No terminal MySQL ou phpMyAdmin, execute:
-source /caminho/para/database.sql
-```
+### Testar sem servidor
 
-### 3. Configurar conexão
-Edite o arquivo `config/database.php`:
-```php
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'mural_recados');
-define('DB_USER', 'seu_usuario');
-define('DB_PASS', 'sua_senha');
-```
+Abra o `login.html` direto no navegador. Nesse modo, os dados ficam salvos no `localStorage` do próprio navegador, sem banco.
 
-### 4. Ativar o backend real
-Em `script.js`, mude a linha:
-```js
-const USE_MOCK_API = true;   // ← mude para false
-```
+| E-mail | Senha | Perfil |
+|---|---|---|
+| admin@demo.com | admin123 | Administrador |
+| user@demo.com | user123 | Usuário |
 
-### 5. Iniciar o servidor
-- Copie a pasta `mural-recados/` para o diretório `htdocs` (XAMPP) ou `www` (WAMP)
-- Acesse: `http://localhost/mural-recados/login.html`
+### Rodar com PHP e MySQL
 
----
+Precisa de PHP 8.0+, MySQL 5.7+ ou MariaDB 10+ e um servidor local como XAMPP, WAMP ou Laragon.
 
-## 📁 Estrutura de arquivos
+1. Crie o banco rodando o `database.sql` no phpMyAdmin ou no terminal do MySQL.
+2. Coloque seus dados de acesso em `config/database.php`:
+   ```php
+   define('DB_HOST', 'localhost');
+   define('DB_NAME', 'mural_recados');
+   define('DB_USER', 'seu_usuario');
+   define('DB_PASS', 'sua_senha');
+   ```
+3. No `script.js`, troque `USE_MOCK_API` para `false`.
+4. Copie a pasta `mural-recados/` para o `htdocs` (XAMPP) ou `www` (WAMP) e acesse `http://localhost/mural-recados/login.html`.
+
+### Estrutura
 
 ```
 mural-recados/
-├── index.html          # Mural principal
-├── login.html          # Tela de login
-├── cadastro.html       # Tela de cadastro
-├── style.css           # Estilos
-├── script.js           # JS (Auth, API, helpers)
-├── database.sql        # Schema do banco
-│
-├── api/
-│   ├── login.php
-│   ├── cadastro.php
-│   ├── logout.php
-│   ├── listar-recados.php
-│   ├── adicionar-recado.php
-│   ├── editar-recado.php
-│   └── excluir-recado.php
-│
+├── index.html        mural principal
+├── login.html
+├── cadastro.html
+├── style.css
+├── script.js         autenticação, chamadas à API e funções auxiliares
+├── database.sql      criação das tabelas
+├── api/              login, cadastro, logout e CRUD dos recados
 └── config/
-    └── database.php    # Conexão MySQL
+    └── database.php  conexão com o banco
 ```
 
----
+### Segurança
 
-## 🔒 Segurança implementada
-
-- Senhas hasheadas com `password_hash` (bcrypt)
-- Prepared statements (proteção contra SQL injection)
-- Validação no frontend e no backend
-- Controle de sessão PHP
-- Proteção XSS via `escapeHtml()` no JS
-- Verificação de permissão em cada endpoint (`requireAdmin()`)
-
----
-
-## ✏️ Personalização
-
-- Cores e tipografia: edite as variáveis CSS no topo de `style.css`
-- Para tornar novos usuários admin automaticamente: altere a rota `api/cadastro.php`
-- Para adicionar campos aos recados: ajuste as tabelas SQL e os formulários HTML
+- Senhas com `password_hash` (bcrypt)
+- Prepared statements contra SQL injection
+- Validação no front-end e no back-end
+- Sessão PHP e checagem de permissão em cada rota de admin
+- Escape de HTML no JavaScript contra XSS
